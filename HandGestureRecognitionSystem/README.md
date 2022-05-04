@@ -20,7 +20,7 @@
 ![Setup Image 1](resource/setup1.jpg)
 4. In the Settings, go to Project and select Python Interpreter
 5. Select your Python Interpreter and click the "add" button
-![Setup Image 1](resource/setup2.jpg)
+![Setup Image 2](resource/setup2.jpg)
 6. Install the following libraries:
     1. opencv-python
     2. mediapipe
@@ -28,7 +28,7 @@
     4. autopy
     5. pynput
     6. scikit-learn (only if you want to train data)
-   ![Setup Image 1](resource/setup3.jpg)
+   ![Setup Image 3](resource/setup3.jpg)
  7. After installing all the libraries, close the current window and click "OK"
  
  *** Note that you can skip this section if you have installed these libraries before
