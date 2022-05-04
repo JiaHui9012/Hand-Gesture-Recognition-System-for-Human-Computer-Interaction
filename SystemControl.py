@@ -10,7 +10,7 @@ import cv2 as cv
 import numpy as np
 import autopy
 import mediapipe as mp
-from pynput.keyboard import Key,Controller
+from pynput.keyboard import Key, Controller
 
 from utils import CvFpsCalc
 from model import KeyPointClassifier
@@ -44,7 +44,7 @@ def get_args():
     return args
 
 
-def main(root, show_frame, testing_mode):
+def start(root, show_frame, testing_mode):
     global root1, cap
     root1 = Toplevel(root)
     root1.geometry("700x640")
@@ -684,7 +684,3 @@ def draw_info(image, fps):
     cv.putText(image, "FPS:" + str(fps), (10, 30), cv.FONT_HERSHEY_SIMPLEX,
                1.0, (255, 255, 255), 2, cv.LINE_AA)
     return image
-
-
-if __name__ == '__main__':
-    main(root=Tk(), show_frame=True, testing_mode=False)

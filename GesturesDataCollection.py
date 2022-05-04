@@ -34,94 +34,6 @@ def get_args():
     return args
 
 
-def main():
-    # Argument parsing
-    args = get_args()
-
-    cap_device = args.device
-    cap_width = args.width
-    cap_height = args.height
-
-    use_static_image_mode = args.use_static_image_mode
-    min_detection_confidence = args.min_detection_confidence
-    min_tracking_confidence = args.min_tracking_confidence
-
-    use_brect = True
-
-    # Camera preparation
-    cap = cv.VideoCapture(cap_device)
-    cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
-    cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
-
-    # MediaPipe model load
-    mp_hands = mp.solutions.hands
-    hands = mp_hands.Hands(
-        static_image_mode=use_static_image_mode,
-        max_num_hands=1,
-        min_detection_confidence=min_detection_confidence,
-        min_tracking_confidence=min_tracking_confidence,
-    )
-
-    # FPS Measurement
-    cvFpsCalc = CvFpsCalc(buffer_len=10)
-
-    while True:
-        fps = cvFpsCalc.get()
-
-        # Process Key (ESC: end)
-        key = cv.waitKey(10)
-        if key == 27:  # ESC
-            break
-        number = select_mode(key)
-
-        # Camera capture
-        ret, image = cap.read()
-        if not ret:
-            break
-        image = cv.flip(image, 1)  # Mirror display
-        debug_image = copy.deepcopy(image)
-
-        # Detection implementation
-        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-
-        image.flags.writeable = False
-        results = hands.process(image)
-        image.flags.writeable = True
-
-        # Get Hand Landmark and save to CSV file
-        if results.multi_hand_landmarks is not None:
-            for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
-                                                  results.multi_handedness):
-                # Bounding box calculation
-                brect = calc_bounding_rect(debug_image, hand_landmarks)
-                # Landmark calculation
-                landmark_list = calc_landmark_list(debug_image, hand_landmarks)
-
-                # Conversion to relative coordinates / normalized coordinates
-                pre_processed_landmark_list = pre_process_landmark(
-                    landmark_list)
-
-                # Write to the dataset file
-                logging_csv(number, pre_processed_landmark_list)
-
-                # Drawing part
-                debug_image = draw_bounding_rect(use_brect, debug_image, brect)
-                debug_image = draw_landmarks(debug_image, landmark_list)
-                debug_image = draw_info_text(
-                    debug_image,
-                    brect,
-                    handedness
-                )
-
-        debug_image = draw_info(debug_image, fps, number)
-
-        # Screen reflection
-        cv.imshow('Hand Gesture Data Collection', debug_image)
-
-    cap.release()
-    cv.destroyAllWindows()
-
-
 def select_mode(key):
     number = -1
     if 48 <= key <= 57:  # 0 ~ 9
@@ -422,5 +334,88 @@ def draw_info(image, fps, number):
     return image
 
 
-if __name__ == '__main__':
-    main()
+# Argument parsing
+args = get_args()
+
+cap_device = args.device
+cap_width = args.width
+cap_height = args.height
+
+use_static_image_mode = args.use_static_image_mode
+min_detection_confidence = args.min_detection_confidence
+min_tracking_confidence = args.min_tracking_confidence
+
+use_brect = True
+
+# Camera preparation
+cap = cv.VideoCapture(cap_device)
+cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
+cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
+
+# MediaPipe model load
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands(
+    static_image_mode=use_static_image_mode,
+    max_num_hands=1,
+    min_detection_confidence=min_detection_confidence,
+    min_tracking_confidence=min_tracking_confidence,
+)
+
+# FPS Measurement
+cvFpsCalc = CvFpsCalc(buffer_len=10)
+
+while True:
+    fps = cvFpsCalc.get()
+
+    # Process Key (ESC: end)
+    key = cv.waitKey(10)
+    if key == 27:  # ESC
+        break
+    number = select_mode(key)
+
+    # Camera capture
+    ret, image = cap.read()
+    if not ret:
+        break
+    image = cv.flip(image, 1)  # Mirror display
+    debug_image = copy.deepcopy(image)
+
+    # Detection implementation
+    image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+
+    image.flags.writeable = False
+    results = hands.process(image)
+    image.flags.writeable = True
+
+    # Get Hand Landmark and save to CSV file
+    if results.multi_hand_landmarks is not None:
+        for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
+                                              results.multi_handedness):
+            # Bounding box calculation
+            brect = calc_bounding_rect(debug_image, hand_landmarks)
+            # Landmark calculation
+            landmark_list = calc_landmark_list(debug_image, hand_landmarks)
+
+            # Conversion to relative coordinates / normalized coordinates
+            pre_processed_landmark_list = pre_process_landmark(
+                landmark_list)
+
+            # Write to the dataset file
+            logging_csv(number, pre_processed_landmark_list)
+
+            # Drawing part
+            debug_image = draw_bounding_rect(use_brect, debug_image, brect)
+            debug_image = draw_landmarks(debug_image, landmark_list)
+            debug_image = draw_info_text(
+                debug_image,
+                brect,
+                handedness
+            )
+
+    debug_image = draw_info(debug_image, fps, number)
+
+    # Screen reflection
+    cv.imshow('Hand Gesture Data Collection', debug_image)
+
+cap.release()
+cv.destroyAllWindows()

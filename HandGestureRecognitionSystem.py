@@ -86,7 +86,7 @@ def main():
             is_on = True
             print(show_frame)
             print(testing_mode)
-            SystemControl.main(root, show_frame, testing_mode)
+            SystemControl.start(root, show_frame, testing_mode)
         else:
             cap = SystemControl.cap
             root1 = SystemControl.root1
